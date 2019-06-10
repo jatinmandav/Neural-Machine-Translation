@@ -65,4 +65,4 @@ train_data = df.tail(int(len(df)*(1-test_split))).reset_index(drop=True)
 
 print('Train Size: {}, Test Size: {}'.format(len(train_data), len(test_data)))
 test_data.to_csv('dataset/english-german-test.csv')
-test_data.to_csv('dataset/english-german-train.csv')
+train_data.to_csv('dataset/english-german-train.csv')
