@@ -2,7 +2,7 @@
 
 ### Dataset
 
-German - English translation dataset is downloaded from (Tab-delimited Bilingual Sentence Pairs)[http://www.manythings.org/anki/].
+German - English translation dataset is downloaded from [Tab-delimited Bilingual Sentence Pairs](http://www.manythings.org/anki/).
 
 Dataset is divided in following random size:
  - Training Size: 138876 sentence pairs (90% of Training dataset)
