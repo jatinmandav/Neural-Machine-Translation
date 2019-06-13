@@ -29,5 +29,5 @@ Here a simple model with Luong's Attention is used to achieve the task of langua
 
 I attempt to implement [Luong's attention](https://arxiv.org/pdf/1508.04025.pdf) due to its simplicity in understanding as well as implementation.
 
-This diagram explain's the basic architecture of the model:
+This diagram explains the basic architecture of the model [Source: [background-on-the-attention-mechanism](https://github.com/tensorflow/nmt#background-on-the-attention-mechanism)]:
 <p align="center"> <img src="results/attention_mechanism.jpg"/> </p>
