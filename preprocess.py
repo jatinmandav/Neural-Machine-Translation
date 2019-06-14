@@ -6,6 +6,7 @@ import re
 import pickle
 from tqdm import tqdm
 import pandas as pd
+import argparse
 
 class PreprocessData:
     def __init__(self, path):
@@ -43,7 +44,12 @@ class PreprocessData:
 
         return cleaned
 
-preprocess = PreprocessData('dataset/deu.txt')
+parser = argparse.ArgumentParser()
+parser.add_argument('--dataset', '-d', help='Path to .txt file downloaded from http://www.manythings.org/anki/', required=True)
+parser.add_argument('--save_file', '-s', help='Name of CSV file to be generated | Default: dataset.csv', default='dataset.csv')
+args = parser.parse_args()
+
+preprocess = PreprocessData(args.dataset)
 cleaned_text = preprocess.clean_text()
 english = []
 german = []
@@ -55,7 +61,7 @@ for pair in tqdm(cleaned_text):
 df = pd.DataFrame([english, german])
 df = df.transpose()
 df.columns = ['english', 'german']
-df.to_csv('dataset/english-german-dataset.csv')
+df.to_csv(args.save_file)
 df = df.sample(frac=1).reset_index(drop=True)
 df = df.sample(frac=1).reset_index(drop=True)
 
