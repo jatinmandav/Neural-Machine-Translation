@@ -113,5 +113,5 @@ class ReadData:
                             # decoder target sequence (one hot encoded)
                             # does not include the START_ token
                             # Offset by one timestep
-                            decoder_target_data[i, t - 1, target_token_index[word]] = 1.
+                            decoder_target_data[i, t - 1, self.target_token_index[word]] = 1.
                 yield([encoder_input_data, decoder_input_data], decoder_target_data)
