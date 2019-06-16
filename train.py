@@ -203,7 +203,6 @@ if not args.inference:
 
     print('\nRun: `tensorboard --logdir={}`\n'.format(log_dir))
 
-    exit()
     model.fit_generator(generator=training_generator,
                         steps_per_epoch=train_samples//args.batch_size,
                         epochs=args.epochs,
