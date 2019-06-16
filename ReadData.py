@@ -9,24 +9,29 @@ from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
 
 class ReadData:
-    def __init__(self, path, train_val_split):
+    def __init__(self, path, train_val_split, language_1, language_2):
         self.path = path
         self.train_val_split = train_val_split
         self.dataset = pd.read_csv(self.path)
-        assert 'english' in self.dataset.columns and 'german' in self.dataset.columns, "Invalid format of {} file.".format(self.path)
+        self.dataset = self.dataset[[language_1, language_2]]
+        self.language_1 = language_1
+        self.language_2 = language_2
+        assert language_2 in self.dataset.columns and language_1 in self.dataset.columns, "Invalid format of {} file.".format(self.path)
 
     def prep_data(self):
         self.clean_data()
         self.get_info()
 
-        self.english = list(self.dataset.english)
-        self.german = list(self.dataset.german)
+        print(self.dataset.head(10))
+
+        self.language_1_text = list(self.dataset[self.language_1])
+        self.language_2_text = list(self.dataset[self.language_2])
 
         x = []
         y = []
-        for i in range(len(self.english)):
-            x.append(str(self.english[i]))
-            y.append(str(self.german[i]))
+        for i in range(len(self.language_1_text)):
+            x.append(str(self.language_1_text[i]))
+            y.append(str(self.language_2_text[i]))
 
         X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=self.train_val_split)
 
@@ -34,55 +39,55 @@ class ReadData:
 
     def clean_data(self):
         # Uncasing all sentences pairs
-        self.dataset.english = self.dataset.english.apply(lambda x: x.lower())
-        self.dataset.german = self.dataset.german.apply(lambda x: x.lower())
+        self.dataset[self.language_1] = self.dataset[self.language_1].apply(lambda x: x.lower())
+        self.dataset[self.language_2] = self.dataset[self.language_2].apply(lambda x: x.lower())
 
         # Removing Punctuation
         exclude = set(string.punctuation)
-        self.dataset.english = self.dataset.english.apply(lambda x: ''.join(ch for ch in x if ch not in exclude))
-        self.dataset.german = self.dataset.german.apply(lambda x: ''.join(ch for ch in x if ch not in exclude))
+        self.dataset[self.language_1] = self.dataset[self.language_1].apply(lambda x: ''.join(ch for ch in x if ch not in exclude))
+        self.dataset[self.language_2] = self.dataset[self.language_2].apply(lambda x: ''.join(ch for ch in x if ch not in exclude))
 
         # Removing unwanted trailing characters
-        self.dataset.english = self.dataset.english.apply(lambda x: x.strip())
-        self.dataset.german = self.dataset.german.apply(lambda x: x.strip())
+        self.dataset[self.language_1] = self.dataset[self.language_1].apply(lambda x: x.strip())
+        self.dataset[self.language_2] = self.dataset[self.language_2].apply(lambda x: x.strip())
 
-        self.dataset.english = self.dataset.english.apply(lambda x: re.sub(" +", " ", x))
-        self.dataset.german = self.dataset.german.apply(lambda x:  re.sub(" +", " ", x))
+        self.dataset[self.language_1] = self.dataset[self.language_1].apply(lambda x: re.sub(" +", " ", x))
+        self.dataset[self.language_2] = self.dataset[self.language_2].apply(lambda x:  re.sub(" +", " ", x))
 
-        self.dataset.english = self.dataset.english.apply(lambda x: re.sub("\?\?", "", x))
-        self.dataset.german = self.dataset.german.apply(lambda x:  re.sub("\?\?", "", x))
+        self.dataset[self.language_1] = self.dataset[self.language_1].apply(lambda x: re.sub("\?\?", "", x))
+        self.dataset[self.language_2] = self.dataset[self.language_2].apply(lambda x:  re.sub("\?\?", "", x))
 
         # Adding "START_" and "_END" tokens
-        self.dataset.english = self.dataset.german.apply(lambda x: "START_" + x + "_END")
+        self.dataset[self.language_2] = self.dataset[self.language_2].apply(lambda x: "START_ " + x + " _END")
 
     def get_info(self):
-        vocab_english = set()
-        for sent in self.dataset.english:
+        vocab_language_1 = set()
+        for sent in self.dataset[self.language_1]:
             for word in sent.split():
-                if word not in vocab_english:
-                    vocab_english.add(word)
+                if word not in vocab_language_1:
+                    vocab_language_1.add(word)
 
-        vocab_german = set()
-        for sent in self.dataset.german:
+        vocab_language_2 = set()
+        for sent in self.dataset[self.language_2]:
             for word in sent.split():
-                if word not in vocab_german:
-                    vocab_german.add(word)
+                if word not in vocab_language_2:
+                    vocab_language_2.add(word)
 
         length_list = []
-        for l in self.dataset.english:
+        for l in self.dataset[self.language_1]:
             length_list.append(len(l.split(' ')))
-        self.max_length_english = np.max(length_list)
+        self.max_length_language_1 = np.max(length_list)
 
         length_list = []
-        for l in self.dataset.german:
+        for l in self.dataset[self.language_2]:
             length_list.append(len(l.split(' ')))
-        self.max_length_german = np.max(length_list)
+        self.max_length_language_2 = np.max(length_list)
 
-        input_words = sorted(list(vocab_english))
-        target_words = sorted(list(vocab_german))
+        input_words = sorted(list(vocab_language_1))
+        target_words = sorted(list(vocab_language_2))
 
-        self.num_encoder_tokens = len(vocab_english)
-        self.num_decoder_tokens = len(vocab_german) + 1
+        self.num_encoder_tokens = len(vocab_language_1)
+        self.num_decoder_tokens = len(vocab_language_2) + 1
 
         self.input_token_index = dict([(word, i+1) for i, word in enumerate(input_words)])
         self.target_token_index = dict([(word, i+1) for i, word in enumerate(target_words)])
@@ -95,9 +100,9 @@ class ReadData:
     def generate_batch(self, X, y, batch_size):
         while True:
             for j in range(0, len(X), batch_size):
-                encoder_input_data = np.zeros((batch_size, self.max_length_english),dtype='float32')
-                decoder_input_data = np.zeros((batch_size, self.max_length_german),dtype='float32')
-                decoder_target_data = np.zeros((batch_size, self.max_length_german, self.num_decoder_tokens),dtype='float32')
+                encoder_input_data = np.zeros((batch_size, self.max_length_language_1),dtype='float32')
+                decoder_input_data = np.zeros((batch_size, self.max_length_language_2),dtype='float32')
+                decoder_target_data = np.zeros((batch_size, self.max_length_language_2, self.num_decoder_tokens),dtype='float32')
                 for i, (input_text, target_text) in enumerate(zip(X[j:j+batch_size], y[j:j+batch_size])):
                     for t, word in enumerate(input_text.split()):
                         encoder_input_data[i, t] = self.input_token_index[word] # encoder input seq

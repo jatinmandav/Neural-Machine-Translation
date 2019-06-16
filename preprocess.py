@@ -46,6 +46,8 @@ class PreprocessData:
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', '-d', help='Path to .txt file downloaded from http://www.manythings.org/anki/', required=True)
+parser.add_argument('--language_1', '-l1', help='Language-1 name | Default: english', default='english')
+parser.add_argument('--language_2', '-l2', help='Language-2 name', required=True)
 parser.add_argument('--save_file', '-s', help='Name of CSV file to be generated | Default: dataset.csv', default='dataset.csv')
 args = parser.parse_args()
 
@@ -60,15 +62,8 @@ for pair in tqdm(cleaned_text):
 
 df = pd.DataFrame([english, german])
 df = df.transpose()
-df.columns = ['english', 'german']
+df.columns = [args.language_1, args.language_2]
+print(df.head())
 df.to_csv(args.save_file)
 df = df.sample(frac=1).reset_index(drop=True)
 df = df.sample(frac=1).reset_index(drop=True)
-
-test_split = 0.2
-test_data = df.head(int(len(df)*test_split)).reset_index(drop=True)
-train_data = df.tail(int(len(df)*(1-test_split))).reset_index(drop=True)
-
-print('Train Size: {}, Test Size: {}'.format(len(train_data), len(test_data)))
-test_data.to_csv('dataset/english-german-test.csv')
-train_data.to_csv('dataset/english-german-train.csv')
