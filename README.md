@@ -2,7 +2,7 @@
 
 ### Dataset
 
-German - English translation dataset is downloaded from [Tab-delimited Bilingual Sentence Pairs](http://www.manythings.org/anki/).
+English - Spanish translation dataset is downloaded from [Tab-delimited Bilingual Sentence Pairs](http://www.manythings.org/anki/).
 
 First a [CSV file](dataset/english-spanish-dataset.csv) generated using `preprocess.py` for easy management and access.
 
